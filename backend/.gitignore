@@ -1,0 +1,31 @@
+.env
+venv/
+jvenv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editor/OS
+.vscode/
+.idea/
+*.log
+Thumbs.db
+.DS_Store
+
+# App runtime artifacts
+Storage/session_state.json
+Storage/chat_memory.sqlite
+Storage/chat_memory.sqlite-wal
+Storage/chat_memory.sqlite-shm
+interface/dashboard.html
+display/*.png
+
+response.mp3

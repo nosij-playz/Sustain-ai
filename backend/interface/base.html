@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{SYSTEM_NAME}} Intelligence | Command Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #030711;
+      background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(6, 182, 212, 0.12), transparent),
+                      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(99, 102, 241, 0.08), transparent),
+                      radial-gradient(ellipse 30% 50% at 90% 30%, rgba(34, 211, 238, 0.06), transparent);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .glass-premium {
+      background: linear-gradient(180deg, rgba(10, 16, 31, 0.82), rgba(6, 10, 21, 0.74));
+      backdrop-filter: blur(22px) saturate(185%);
+      border: 1px solid rgba(148, 163, 184, 0.08);
+      box-shadow: 0 30px 80px rgba(2, 6, 23, 0.42);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .glass-premium:hover {
+      border-color: rgba(34, 211, 238, 0.24);
+      transform: translateY(-3px);
+      box-shadow: 0 36px 96px rgba(2, 6, 23, 0.52);
+    }
+    .gradient-cyan { background: linear-gradient(135deg, #06b6d4, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .number-glow { text-shadow: 0 0 20px rgba(6, 182, 212, 0.3); }
+    .dashboard-snippet {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 5;
+      overflow: hidden;
+    }
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+    .readmore-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      background: rgba(8, 145, 178, 0.14);
+      color: #67e8f9;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .readmore-chip::after {
+      content: '+';
+      font-size: 0.8rem;
+      line-height: 1;
+    }
+    details[open] .readmore-chip::after {
+      content: '−';
+    }
+    .readmore-full {
+      display: none;
+      opacity: 0;
+      transform: translateY(-2px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    details[open] .readmore-full {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .dashboard-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      backdrop-filter: blur(10px);
+    }
+    .dashboard-table tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.42);
+    }
+    .dashboard-table td,
+    .dashboard-table th {
+      border-right: 1px solid rgba(30, 41, 59, 0.5);
+    }
+    .dashboard-table td:last-child,
+    .dashboard-table th:last-child {
+      border-right: none;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-6 lg:p-8 flex flex-col items-center min-h-screen">
+  <header class="w-full max-w-[1440px] flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/10 border border-cyan-400/30 flex items-center justify-center shadow-lg">
+        <i class="fas fa-recycle text-2xl text-cyan-300"></i>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight"><span class="gradient-cyan">{{SYSTEM_NAME}}</span></h1>
+        <p class="text-xs font-medium tracking-[0.2em] text-slate-500 uppercase">Intelligence Command</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-5 glass-premium px-5 py-3 rounded-2xl">
+        <span class="text-sm font-medium text-slate-200 tracking-wide">SYSTEM OPERATIONAL</span>
+        <div class="w-px h-5 bg-slate-700/60"></div>
+        <span class="text-sm text-slate-400 font-mono" id="live-time">--:--:-- UTC</span>
+    </div>
+  </header>
+
+  <!-- This is where the AI will inject the la- l data -->
+  <div id="dashboard-content" class="w-full max-w-[1440px]">
+    {{DASHBOARD_BODY}}
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('live-time').textContent = now.toLocaleTimeString('en-US', { hour12: false, timeZone: 'UTC' }) + ' UTC';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
