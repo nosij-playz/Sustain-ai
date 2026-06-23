@@ -101,6 +101,28 @@ def play_audio():
     except OSError:
         pass
 
+def transcribe_audio_file(file_path):
+    """Transcribes an audio file (wav) into text"""
+    recognizer = sr.Recognizer()
+    try:
+        with sr.AudioFile(file_path) as source:
+            audio = recognizer.record(source)
+            text = recognizer.recognize_google(audio)
+            return text
+    except Exception as e:
+        print(f"Transcription failed: {e}")
+        return None
+
+async def generate_tts_file(text, output_path):
+    """Generates an mp3 file path for the browser to play"""
+    clean_text = _normalize_for_speech(text)
+    if not clean_text:
+        return None
+    
+    communicate = edge_tts.Communicate(clean_text, VOICE, rate=_normalize_rate(RATE), pitch=PITCH)
+    await communicate.save(output_path)
+    return output_path
+
 def speak(text):
     """Main function to convert text to speech and play it"""
     clean_text = _normalize_for_speech(text)
@@ -114,46 +136,4 @@ def speak(text):
     except Exception as error:
         print(f"AI: Speech playback failed: {error}")
 
-# ==========================================
-# SPEECH-TO-TEXT (STT) SECTION
-# ==========================================
-def listen():
-    """Listens to microphone and returns recognized text"""
-    recognizer = sr.Recognizer()
-    
-    max_retries = 3
-    for attempt in range(max_retries):
-        if attempt > 0:
-            print(f"Retrying... ({attempt + 1}/{max_retries})")
-
-        with sr.Microphone() as source:
-            print("\nListening... (Speak now)")
-            recognizer.adjust_for_ambient_noise(source, duration=3)
-            try:
-                audio = recognizer.listen(source, timeout=5, phrase_time_limit=8)
-            except sr.WaitTimeoutError:
-                if attempt < max_retries - 1:
-                    import time
-                    time.sleep(0.5)
-                continue
-
-        try:
-            text = recognizer.recognize_google(audio)
-            print(f"You: {text}")
-            return text
-        except sr.UnknownValueError:
-            print("AI: I didn't quite catch that.")
-            if attempt < max_retries - 1:
-                import time
-                time.sleep(0.5)
-            continue
-        except sr.RequestError:
-            print("AI: System Error: Could not connect to the speech service.")
-            if attempt < max_retries - 1:
-                import time
-                time.sleep(0.5)
-            continue
-
-    print("AI: No input detected after retries.")
-    return None
 

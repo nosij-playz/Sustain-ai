@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ system_name }} | Waste Disposal Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #07111f;
+            --surface: rgba(8,15,28,0.82);
+            --border: rgba(148,163,184,0.16);
+            --border-strong: rgba(148,163,184,0.26);
+            --text-primary: #e5eef8;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            --accent: #22d3ee;
+            --accent-bg: rgba(34,211,238,0.12);
+            --accent-border: rgba(34,211,238,0.22);
+            --accent-text: #67e8f9;
+            --success-bg: rgba(16,185,129,0.12);
+            --success-text: #6ee7b7;
+            --success-dot: #34d399;
+            --danger-bg: rgba(239,68,68,0.12);
+            --danger-border: rgba(239,68,68,0.22);
+            --danger-text: #fca5a5;
+            --msg-user-bg: rgba(34,211,238,0.12);
+            --msg-user-border: rgba(34,211,238,0.18);
+            --msg-assistant-bg: rgba(15,23,42,0.76);
+            --msg-assistant-border: rgba(148,163,184,0.12);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-card: 0 18px 60px rgba(0,0,0,0.45);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: radial-gradient(ellipse at top, rgba(34,211,238,0.14), transparent 45%),
+                        radial-gradient(ellipse at right, rgba(59,130,246,0.10), transparent 35%),
+                        linear-gradient(180deg, #02060d 0%, #07111f 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ── Layout ── */
+        .page { max-width: 1600px; margin: 0 auto; padding: 16px 32px 40px; }
+
+        /* ── Header ── */
+        .header {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(18px);
+        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .logo-mark {
+            width: 52px; height: 52px;
+            border-radius: var(--radius-md);
+            background: var(--accent-bg);
+            border: 1px solid var(--accent-border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .logo-icon { width: 26px; height: 26px; color: var(--accent); }
+        .header-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 4px; }
+        .header-title { font-size: 26px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.03em; }
+        .header-badges { display: flex; gap: 8px; flex-shrink: 0; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px; font-weight: 500;
+        }
+        .badge-online { background: var(--success-bg); color: var(--success-text); }
+        .badge-online-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success-dot); }
+        .badge-mode { background: var(--accent-bg); color: var(--accent-text); border: 1px solid var(--accent-border); }
+
+        /* ── Grid ── */
+        .grid { display: grid; grid-template-columns: 256px minmax(0,1fr); gap: 16px; align-items: start; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(18px);
+        }
+        .sidebar-section { padding-top: 14px; margin-top: 10px; border-top: 1px solid var(--border); }
+        .sidebar-section:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+        .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 10px; }
+
+        .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .mode-form { display: contents; }
+        .mode-btn {
+            width: 100%; padding: 9px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: transparent;
+            font-size: 13px; font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            font-family: inherit;
+        }
+        .mode-btn:hover { border-color: var(--accent-border); color: var(--accent-text); background: var(--accent-bg); }
+        .mode-btn-active { border-color: var(--accent-border) !important; background: var(--accent-bg) !important; color: var(--accent-text) !important; }
+
+        .btn-primary {
+            width: 100%; padding: 10px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: #22d3ee;
+            color: #020d18;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: background 0.15s;
+        }
+        .btn-primary:hover { background: #67e8f9; }
+        
+        .btn-dashboard {
+            background: #10b981; 
+            color: #022c22;
+        }
+        .btn-dashboard:hover { background: #34d399; }
+
+        .btn-secondary {
+            width: 100%; padding: 9px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: transparent;
+            font-size: 13px; font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            transition: all 0.15s;
+            margin-top: 6px;
+        }
+        .btn-secondary:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+        .status-card {
+            background: rgba(15,23,42,0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-top: 10px;
+        }
+        .status-row { display: flex; justify-content: space-between; align-items: center; }
+        .status-row + .status-row { margin-top: 4px; }
+        .status-val { color: var(--text-primary); font-weight: 500; }
+
+        .upload-label {
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            width: 100%; padding: 9px;
+            border-radius: var(--radius-sm);
+            border: 1px dashed var(--border-strong);
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .upload-label:hover { border-color: var(--accent); color: var(--accent-text); background: var(--accent-bg); }
+        .upload-hint { font-size: 11px; color: var(--text-tertiary); text-align: center; margin-top: 5px; }
+
+        .speech-preview {
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--accent-border);
+            background: var(--accent-bg);
+            padding: 10px;
+            margin-top: 8px;
+        }
+        .speech-preview img { max-height: 120px; border-radius: 6px; display: block; margin: 0 auto; }
+        .speech-preview-status { font-size: 11px; color: var(--accent-text); text-align: center; margin-top: 6px; }
+
+        .info-card {
+            background: rgba(15,23,42,0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-size: 12px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+        .info-card-heading { font-weight: 600; color: var(--text-secondary); margin-bottom: 2px; }
+
+        /* ── Main Panel ── */
+        .main-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(18px);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+        }
+        .panel-header {
+            padding: 18px 20px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+        .panel-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 2px; }
+        .panel-title { font-size: 15px; font-weight: 600; }
+        
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+
+        .clear-btn {
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: transparent;
+            font-size: 12px; font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            display: flex; align-items: center; gap: 5px;
+            transition: all 0.15s;
+        }
+        .clear-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+        /* Messages */
+        .messages { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
+        .messages::-webkit-scrollbar { width: 4px; }
+        .messages::-webkit-scrollbar-track { background: transparent; }
+        .messages::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+        .msg { border-radius: var(--radius-lg); padding: 14px 16px; }
+        .msg-user { background: var(--msg-user-bg); border: 1px solid var(--msg-user-border); }
+        .msg-assistant { background: var(--msg-assistant-bg); border: 1px solid var(--msg-assistant-border); }
+        .msg-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .msg-role { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-tertiary); }
+        .msg-time { font-size: 11px; color: var(--text-tertiary); }
+        .msg-text { font-size: 14px; line-height: 1.7; color: var(--text-primary); white-space: pre-wrap; }
+
+        .empty-state {
+            padding: 52px 24px; text-align: center;
+            border: 1px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            margin: 8px;
+        }
+        .empty-icon { font-size: 24px; margin-bottom: 10px; color: var(--text-tertiary); }
+        .empty-title { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+        .empty-sub { font-size: 13px; color: var(--text-tertiary); }
+
+        /* Animations */
+        @keyframes spin { 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* Input area */
+        .input-area { padding: 14px 20px 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; background: var(--surface); border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+        .textarea-input {
+            width: 100%;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: rgba(15,23,42,0.5);
+            padding: 11px 14px;
+            font-size: 14px;
+            color: var(--text-primary);
+            resize: none;
+            font-family: inherit;
+            line-height: 1.65;
+            transition: border-color 0.15s;
+        }
+        .textarea-input:focus { outline: none; border-color: var(--accent-border); background: rgba(15,23,42,0.7); }
+        .textarea-input::placeholder { color: var(--text-tertiary); }
+        .input-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .input-left { display: flex; align-items: center; gap: 8px; }
+        .attach-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 13px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: transparent;
+            font-size: 13px; font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .attach-btn:hover { border-color: var(--accent-border); color: var(--accent-text); background: var(--accent-bg); }
+        .attach-hint { font-size: 12px; color: var(--text-tertiary); }
+        .send-btn {
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 9px 20px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: #22d3ee;
+            color: #020d18;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+            min-width: 90px;
+        }
+        .send-btn:hover:not(:disabled) { background: #67e8f9; }
+        .send-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .error-alert {
+            margin: 0 20px 16px;
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+        }
+        .error-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--danger-text); margin-bottom: 6px; }
+        .error-text { font-size: 14px; line-height: 1.7; color: var(--danger-text); white-space: pre-wrap; }
+
+        /* SVG icons */
+        .icon { width: 18px; height: 18px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+        .icon-sm { width: 14px; height: 14px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page { padding: 10px 10px 32px; }
+            .grid { grid-template-columns: 1fr; }
+            .header { flex-wrap: wrap; }
+            .header-badges { flex-wrap: wrap; }
+            .header-title { font-size: 22px; }
+            .main-panel { height: auto; min-height: 60vh; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-mark">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 22c4.97 0 9-2.686 9-6V8"></path>
+                    <path d="M3 8v8c0 3.314 4.03 6 9 6"></path>
+                    <ellipse cx="12" cy="8" rx="9" ry="3.5"></ellipse>
+                    <path d="M3 12c0 1.657 4.03 3 9 3s9-1.343 9-3"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="header-eyebrow">Waste disposal interface</p>
+                <h1 class="header-title">{{ system_name }}</h1>
+            </div>
+        </div>
+        <div class="header-badges">
+            <span class="badge badge-online">
+                <span class="badge-online-dot"></span>
+                Online
+            </span>
+            <span class="badge badge-mode">{{ active_mode_label }}</span>
+        </div>
+    </header>
+
+    <div class="grid">
+
+        <aside class="sidebar">
+
+            <div class="sidebar-section">
+                <p class="section-label">Mode</p>
+                <div class="mode-grid">
+                    <form class="mode-form" method="post" action="{{ url_for('set_mode') }}">
+                        <input type="hidden" name="mode" value="chat">
+                        <button type="submit" class="mode-btn {% if active_mode == 'chat' %}mode-btn-active{% endif %}">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            Chat
+                        </button>
+                    </form>
+                    <form class="mode-form" method="post" action="{{ url_for('set_mode') }}">
+                        <input type="hidden" name="mode" value="speech">
+                        <button type="submit" class="mode-btn {% if active_mode == 'speech' %}mode-btn-active{% endif %}">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                            Speech
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {% if active_mode == 'speech' %}
+            <div class="sidebar-section">
+                <p class="section-label">Voice control</p>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <button type="button" id="speech-start-btn" class="btn-primary" onclick="startRecording()">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <span id="rec-text">Start Listening</span>
+                    </button>
+                    <button type="button" id="speech-stop-btn" class="btn-secondary" onclick="stopRecording()" style="display:none;">
+                        Stop & Send
+                    </button>
+                </div>
+
+                <div class="status-card">
+                    <div class="status-row">
+                        <span>Status</span>
+                        <span class="status-val" id="speech-status-val">Idle</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 12px;">
+                    <label for="speech-image" class="upload-label">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Attach image
+                    </label>
+                    <input type="file" id="speech-image" accept="image/*" style="display:none;">
+                    <p class="upload-hint" id="speech-image-name"></p>
+                    <div id="speech-image-preview" class="speech-preview" style="display:none;">
+                        <img id="speech-image-img" src="" alt="Uploaded image">
+                        <p id="speech-image-status" class="speech-preview-status"></p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </aside>
+
+        <main class="main-panel">
+
+            <div class="panel-header">
+                <div>
+                    <p class="panel-eyebrow">Conversation</p>
+                    <h2 class="panel-title">{{ active_mode_label }}</h2>
+                </div>
+                
+                <div class="header-actions">
+                    {% if dashboard_ready %}
+                    <a href="{{ url_for('dashboard') }}" target="_blank" class="btn-primary btn-dashboard" style="padding: 6px 14px; width: auto; font-size: 12px; margin: 0; text-decoration: none;">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                        View Dashboard
+                    </a>
+                    {% endif %}
+
+                    <form method="post" action="{{ url_for('clear_chat') }}" style="margin: 0;">
+                        <button type="submit" class="clear-btn">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+                            Clear
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="chat-scroll" class="messages">
+                {% if chat_history %}
+                    {% for item in chat_history %}
+                    <div class="msg {{ 'msg-user' if item.role == 'user' else 'msg-assistant' }}">
+                        <div class="msg-meta">
+                            <span class="msg-role">{{ 'You' if item.role == 'user' else system_name }}</span>
+                            <span class="msg-time">{{ item.timestamp }} · {{ item.mode }}</span>
+                        </div>
+                        <p class="msg-text">{{ item.content }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state" id="chat-empty-state">
+                        <div class="empty-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
+                        {% if active_mode == 'speech' %}
+                        <p class="empty-title">Ready for voice input</p>
+                        <p class="empty-sub">Click Start listening and speak into your microphone.</p>
+                        {% else %}
+                        <p class="empty-title">Start a conversation</p>
+                        <p class="empty-sub">Ask about waste disposal, pollution, soil health, or sustainability.</p>
+                        <p class="empty-sub">Setup your location to get personalized responses.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if speech_state.error %}
+            <div class="error-alert">
+                <p class="error-label">Speech error</p>
+                <p class="error-text">{{ speech_state.error }}</p>
+            </div>
+            {% endif %}
+
+            {% if active_mode == 'chat' %}
+            <div id="chat-input-area" class="input-area">
+                <form id="chat-form" method="post" action="{{ url_for('chat') }}" enctype="multipart/form-data" style="display:contents;">
+                    <textarea
+                        id="chat-textarea"
+                        name="query"
+                        rows="3"
+                        class="textarea-input"
+                        placeholder="Ask about waste disposal, pollution, soil, or sustainability… (Press Enter to send)"
+                    ></textarea>
+                    <div class="input-footer">
+                        <div class="input-left">
+                            <label for="chat-image" class="attach-btn">
+                                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                                Attach image
+                            </label>
+                            <input type="file" id="chat-image" name="image" accept="image/*" style="display:none;">
+                            <span id="chat-image-name" class="attach-hint"></span>
+                        </div>
+                        <button type="submit" id="chat-send-btn" class="send-btn">
+                            <span>Send</span>
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+
+<script>
+    // Escape HTML to prevent injection when updating DOM
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[tag] || tag));
+    }
+
+    // Scroll messages to bottom on load
+    const chatScroll = document.getElementById('chat-scroll');
+    if (chatScroll) chatScroll.scrollTop = chatScroll.scrollHeight;
+
+    // Chat image: show filename when selected
+    const chatImageInput = document.getElementById('chat-image');
+    const chatImageName = document.getElementById('chat-image-name');
+    if (chatImageInput) {
+        chatImageInput.addEventListener('change', function () {
+            chatImageName.textContent = this.files && this.files[0] ? '✓ ' + this.files[0].name : '';
+        });
+    }
+
+    // --- Instant UI Update & Submission Logic ---
+    const chatForm = document.getElementById('chat-form');
+    const chatTextarea = document.getElementById('chat-textarea');
+    const sendBtn = document.getElementById('chat-send-btn');
+    const systemName = "{{ system_name }}";
+
+    function triggerSubmission(e) {
+        const text = chatTextarea.value.trim();
+        const hasImage = chatImageInput && chatImageInput.files.length > 0;
+
+        // Don't submit if empty
+        if (text === '' && !hasImage) {
+            if(e) e.preventDefault();
+            return;
+        }
+
+        // Prevent double submission
+        if (sendBtn.disabled) {
+            if(e) e.preventDefault();
+            return;
+        }
+
+        // 1. Remove empty state if present
+        const emptyState = document.getElementById('chat-empty-state');
+        if (emptyState) emptyState.remove();
+
+        // 2. Append User Message Instantly
+        let contentText = text;
+        if (hasImage) {
+            contentText += '\n[Image Attached: ' + chatImageInput.files[0].name + ']';
+        }
+
+        const userMsg = document.createElement('div');
+        userMsg.className = 'msg msg-user';
+        userMsg.innerHTML = `
+            <div class="msg-meta">
+                <span class="msg-role">You</span>
+                <span class="msg-time">Just now · chat</span>
+            </div>
+            <p class="msg-text">${escapeHTML(contentText)}</p>
+        `;
+        chatScroll.appendChild(userMsg);
+
+        // 3. Append Assistant "Thinking..." Indicator to the chat window
+        const thinkingId = 'thinking-span-' + Date.now();
+        const svgIcon = `<svg class="icon-sm" style="animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>`;
+        
+        const thinkingMsg = document.createElement('div');
+        thinkingMsg.className = 'msg msg-assistant';
+        thinkingMsg.innerHTML = `
+            <div class="msg-meta">
+                <span class="msg-role">${escapeHTML(systemName)}</span>
+                <span class="msg-time">Working...</span>
+            </div>
+            <p class="msg-text" style="display:flex; align-items:center; gap:8px; color: var(--accent-text);">
+                ${svgIcon}
+                <span id="${thinkingId}">Processing your request...</span>
+            </p>
+        `;
+        chatScroll.appendChild(thinkingMsg);
+        
+        // Setup the cycling text interval
+        const textSpan = document.getElementById(thinkingId);
+        if (textSpan) {
+            const states = [
+                "Processing your request...", 
+                "SustainAi is thinking...", 
+                "Analyzing your request..."
+            ];
+            let stateIndex = 0;
+            setInterval(() => {
+                stateIndex = (stateIndex + 1) % states.length;
+                textSpan.textContent = states[stateIndex];
+            }, 2500); // Changes every 2.5 seconds
+        }
+        
+        // Force scroll to bottom
+        chatScroll.scrollTop = chatScroll.scrollHeight;
+
+        // 4. Update UI to Disabled State (keep box in place, just grey it out)
+        chatTextarea.readOnly = true;
+        chatTextarea.style.opacity = '0.5';
+        
+        // Turn the send button into a spinner
+        sendBtn.innerHTML = svgIcon;
+        sendBtn.disabled = true;
+
+        // 5. Let the form naturally submit if triggered by button, or force submit if triggered by Enter key
+        if(e && e.type === 'keydown') {
+            chatForm.submit();
+        }
+    }
+
+    if (chatForm) {
+        // Handle Button Click Submission
+        chatForm.addEventListener('submit', triggerSubmission);
+
+        // Handle Enter Key Submission
+        chatTextarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); 
+                triggerSubmission(e);
+            }
+        });
+    }
+
+    // Minor: Add spinner to Speech button as well
+    function showSpeechThinking(formElement) {
+        const btn = formElement.querySelector('#speech-start-btn');
+        if (btn) {
+            btn.innerHTML = `<svg class="icon-sm" style="animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg><span>Processing...</span>`;
+            btn.disabled = true;
+        }
+    }
+
+    // Speech image: upload via AJAX and show preview
+    const speechImageInput = document.getElementById('speech-image');
+    const speechImageName = document.getElementById('speech-image-name');
+    const speechImagePreview = document.getElementById('speech-image-preview');
+    const speechImageImg = document.getElementById('speech-image-img');
+    const speechImageStatus = document.getElementById('speech-image-status');
+
+    if (speechImageInput) {
+        speechImageInput.addEventListener('change', function () {
+            if (!(this.files && this.files[0])) {
+                if (speechImageName) speechImageName.textContent = '';
+                if (speechImagePreview) speechImagePreview.style.display = 'none';
+                return;
+            }
+            const file = this.files[0];
+            if (speechImageName) speechImageName.textContent = '✓ ' + file.name;
+            const form = new FormData();
+            form.append('image', file);
+            form.append('mode', 'speech');
+            if (speechImageStatus) speechImageStatus.textContent = 'Uploading…';
+            fetch('/upload-image', { method: 'POST', body: form })
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.success) {
+                        if (speechImagePreview && speechImageImg) {
+                            speechImageImg.src = data.path + '?' + Date.now();
+                            speechImagePreview.style.display = 'block';
+                        }
+                        if (speechImageStatus) speechImageStatus.textContent = '✓ Ready for voice analysis';
+                    } else {
+                        if (speechImageStatus) speechImageStatus.textContent = (data && data.error) ? data.error : 'Upload failed';
+                    }
+                })
+                .catch(() => { if (speechImageStatus) speechImageStatus.textContent = 'Upload failed'; });
+        });
+    }
+
+    // --- Voice Recording Logic ---
+    let mediaRecorder;
+    let audioChunks = [];
+
+    async function startRecording() {
+        const statusVal = document.getElementById('speech-status-val');
+        const startBtn = document.getElementById('speech-start-btn');
+        const stopBtn = document.getElementById('speech-stop-btn');
+        const recText = document.getElementById('rec-text');
+
+        try {
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') 
+                             ? 'audio/webm' 
+                             : 'audio/ogg';
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = uploadAudio;
+
+            mediaRecorder.start();
+            
+            if (statusVal) statusVal.innerText = "Recording...";
+            if (recText) recText.innerText = "Stop Recording";
+            if (startBtn) startBtn.style.display = 'none';
+            if (stopBtn) stopBtn.style.display = 'block';
+        } catch (err) {
+            console.error("Mic access error:", err);
+            alert("Could not access microphone. Please check permissions.");
+        }
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            const statusVal = document.getElementById('speech-status-val');
+            if (statusVal) statusVal.innerText = "Processing...";
+        }
+    }
+
+    async function uploadAudio() {
+        const statusVal = document.getElementById('speech-status-val');
+        const startBtn = document.getElementById('speech-start-btn');
+        const stopBtn = document.getElementById('speech-stop-btn');
+        const recText = document.getElementById('rec-text');
+
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const formData = new FormData();
+        formData.append("audio", audioBlob);
+
+        try {
+            const response = await fetch("/process-voice-input", {
+                method: "POST",
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // 1. Append User Transcript to Chat
+                const userMsg = document.createElement('div');
+                userMsg.className = 'msg msg-user';
+                userMsg.innerHTML = `<div class="msg-meta"><span class="msg-role">You</span><span class="msg-time">Just now · speech</span></div><p class="msg-text">🎤 ${escapeHTML(data.transcript)}</p>`;
+                chatScroll.appendChild(userMsg);
+
+                // 2. Append AI Response to Chat
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'msg msg-assistant';
+                aiMsg.innerHTML = `<div class="msg-meta"><span class="msg-role">${systemName}</span><span class="msg-time">Just now · speech</span></div><p class="msg-text">${escapeHTML(data.response_text)}</p>`;
+                chatScroll.appendChild(aiMsg);
+                
+                chatScroll.scrollTop = chatScroll.scrollHeight;
+
+                // 3. Play the generated TTS audio
+                const audioPlayer = new Audio(data.audio_url);
+                audioPlayer.play();
+
+                if (statusVal) statusVal.innerText = "Complete";
+            } else {
+                alert("Error: " + data.error);
+                if (statusVal) statusVal.innerText = "Error";
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            if (statusVal) statusVal.innerText = "Upload failed";
+        } finally {
+            if (startBtn) startBtn.style.display = 'block';
+            if (stopBtn) stopBtn.style.display = 'none';
+            if (recText) recText.innerText = "Start Listening";
+        }
+    }
+</script>
+</body>
+</html>

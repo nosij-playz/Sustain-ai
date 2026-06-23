@@ -483,7 +483,6 @@ class DashboardModule:
         """Opens the generated dashboard in a new window."""
         path = os.path.abspath(self.output_file)
         if not self._opened:
-            webbrowser.open(f"file://{path}", new=0, autoraise=False)
             self._opened = True
             print(f"🚀 Dashboard opened: {path}")
 
