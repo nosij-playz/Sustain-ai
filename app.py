@@ -203,7 +203,7 @@ def chat():
 
     full_query = f"{query}{file_path_str}".strip()
 
-    if any(word in full_query.lower() for word in ["status", "processing", "working", "update"]):
+    if any(word in full_query.lower() for word in ["status update", "what is the status", "show status", "system status"]):
         ai_response = master.get_status_update()
     else:
         ai_response = master.process_input(full_query)
@@ -352,4 +352,4 @@ def process_voice_input():
 if __name__ == "__main__":
     if not os.environ.get("WERKZEUG_RUN_MAIN"):
         print("🚀 Starting SustainAi Flask Interface...")
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)
