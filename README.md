@@ -1,9 +1,9 @@
 # 🌿 SustainAi - Waste Disposal Management System
 
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
-[![Ollama](https://img.shields.io/badge/Ollama-0.1+-orange.svg)](https://ollama.ai/)
-![Powered by Agentic AI](https://img.shields.io/badge/Powered%20by-Agentic%20AI-6A5ACD?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-2.0+-000000?style=for-the-badge&logo=flask&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-1.0+-000000?style=for-the-badge)
+![Agentic AI](https://img.shields.io/badge/Powered%20by-Agentic%20AI-7C3AED?style=for-the-badge)
 
 > **An advanced, AI-driven waste disposal management system providing autonomous environmental analysis, live ecosystem intelligence, and decision-support tools.**
 
