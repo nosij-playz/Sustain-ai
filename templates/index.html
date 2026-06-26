@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        /* ... (all styles remain exactly as before) ... */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -52,10 +53,8 @@
             line-height: 1.5;
         }
 
-        /* ── Layout ── */
         .page { max-width: 1600px; margin: 0 auto; padding: 16px 32px 40px; }
 
-        /* ── Header ── */
         .header {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -92,10 +91,8 @@
         .badge-online-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success-dot); }
         .badge-mode { background: var(--accent-bg); color: var(--accent-text); border: 1px solid var(--accent-border); }
 
-        /* ── Grid ── */
         .grid { display: grid; grid-template-columns: 256px minmax(0,1fr); gap: 16px; align-items: start; }
 
-        /* ── Sidebar ── */
         .sidebar {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -109,7 +106,6 @@
         .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 10px; }
 
         .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .mode-form { display: contents; }
         .mode-btn {
             width: 100%; padding: 9px 8px;
             border-radius: var(--radius-sm);
@@ -138,7 +134,6 @@
             transition: background 0.15s;
         }
         .btn-primary:hover { background: #67e8f9; }
-        
         .btn-dashboard {
             background: #10b981; 
             color: #022c22;
@@ -208,7 +203,6 @@
         }
         .info-card-heading { font-weight: 600; color: var(--text-secondary); margin-bottom: 2px; }
 
-        /* ── Main Panel ── */
         .main-panel {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -226,7 +220,6 @@
         }
         .panel-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 2px; }
         .panel-title { font-size: 15px; font-weight: 600; }
-        
         .header-actions { display: flex; gap: 10px; align-items: center; }
 
         .clear-btn {
@@ -257,7 +250,6 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
         }
 
-        /* Messages */
         .messages { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
         .messages::-webkit-scrollbar { width: 4px; }
         .messages::-webkit-scrollbar-track { background: transparent; }
@@ -281,12 +273,8 @@
         .empty-title { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
         .empty-sub { font-size: 13px; color: var(--text-tertiary); }
 
-        /* Animations */
-        @keyframes spin { 
-            100% { transform: rotate(360deg); } 
-        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Input area */
         .input-area { padding: 14px 20px 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; background: var(--surface); border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
         .textarea-input {
             width: 100%;
@@ -363,11 +351,9 @@
         .error-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--danger-text); margin-bottom: 6px; }
         .error-text { font-size: 14px; line-height: 1.7; color: var(--danger-text); white-space: pre-wrap; }
 
-        /* SVG icons */
         .icon { width: 18px; height: 18px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
         .icon-sm { width: 14px; height: 14px; }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .page { padding: 10px 10px 32px; }
             .grid { grid-template-columns: 1fr; }
@@ -433,7 +419,6 @@
             {% if active_mode == 'speech' %}
             <div class="sidebar-section">
                 <p class="section-label">Voice control</p>
-                
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <button type="button" id="speech-start-btn" class="btn-primary" onclick="startRecording()">
                         <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
@@ -479,7 +464,6 @@
                     <p class="panel-eyebrow">Conversation</p>
                     <h2 class="panel-title">{{ active_mode_label }}</h2>
                 </div>
-                
                 <div class="header-actions">
                     <div id="dashboard-action-container">
                         {% if dashboard_ready %}
@@ -537,7 +521,7 @@
 
             {% if active_mode == 'chat' %}
             <div id="chat-input-area" class="input-area">
-                <form id="chat-form" method="post" action="{{ url_for('chat') }}" enctype="multipart/form-data" style="display:contents;">
+                <form id="chat-form" enctype="multipart/form-data" style="display:contents;">
                     <textarea
                         id="chat-textarea"
                         name="query"
@@ -554,7 +538,7 @@
                             <input type="file" id="chat-image" name="image" accept="image/*" style="display:none;">
                             <span id="chat-image-name" class="attach-hint"></span>
                         </div>
-                        <button type="submit" id="chat-send-btn" class="send-btn">
+                        <button type="button" id="chat-send-btn" class="send-btn">
                             <span>Send</span>
                             <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                         </button>
@@ -602,20 +586,27 @@
     const dashboardToastEl = document.getElementById('dashboard-toast');
     window.showDashboardToastOnLoad = dashboardToastEl && dashboardToastEl.getAttribute('data-show-toast') === 'true';
 
-    // Scroll messages to bottom on load
     const chatScroll = document.getElementById('chat-scroll');
     if (chatScroll) chatScroll.scrollTop = chatScroll.scrollHeight;
 
-    // Chat image: show filename when selected
     const chatImageInput = document.getElementById('chat-image');
     const chatImageName = document.getElementById('chat-image-name');
+
+    function clearAttachedImage() {
+        if (chatImageInput) {
+            chatImageInput.value = '';
+        }
+        if (chatImageName) {
+            chatImageName.textContent = '';
+        }
+    }
+
     if (chatImageInput) {
         chatImageInput.addEventListener('change', function () {
             chatImageName.textContent = this.files && this.files[0] ? '✓ ' + this.files[0].name : '';
         });
     }
 
-    // --- Instant UI Update & Submission Logic ---
     const chatForm = document.getElementById('chat-form');
     const chatTextarea = document.getElementById('chat-textarea');
     const sendBtn = document.getElementById('chat-send-btn');
@@ -629,15 +620,12 @@
         const modal = document.getElementById('location-modal');
         if (!modal) return;
         modal.style.display = show ? 'flex' : 'none';
-        
         if (show && !modalMap) {
             modalMap = L.map('modal-map').setView([11.8745, 75.3704], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
             }).addTo(modalMap);
-            
             modalMarker = L.marker([11.8745, 75.3704], {draggable: true}).addTo(modalMap);
-            
             modalMarker.on('dragend', function(e) {
                 const {lat, lng} = e.target.getLatLng();
                 selectedLocation = { lat, lng, display_name: "Custom Location" };
@@ -652,16 +640,13 @@
             searchInput.addEventListener('input', async (e) => {
                 const query = e.target.value;
                 const list = document.getElementById('modal-suggestions');
-                
                 if (!IQ_KEY || query.length < 3) {
                     list.innerHTML = '';
                     return;
                 }
-
                 try {
                     const res = await fetch(`https://api.locationiq.com/v1/autocomplete?key=${IQ_KEY}&q=${query}&limit=5`);
                     const data = await res.json();
-                    
                     list.innerHTML = '';
                     if (Array.isArray(data)) {
                         data.forEach(item => {
@@ -669,18 +654,11 @@
                             li.textContent = item.display_name;
                             li.onclick = () => {
                                 selectedLocation = item;
-                                
-                                // 1. Ensure the modal is open and map is initialized
-                                toggleLocationModal(true); 
-                                
-                                // 2. Now that we've called the toggle function, modalMap is guaranteed to exist
-                                // Use a small delay to ensure the modal animation finishes
+                                toggleLocationModal(true);
                                 setTimeout(() => {
                                     modalMap.setView([item.lat, item.lon], 12);
                                     modalMarker.setLatLng([item.lat, item.lon]);
                                 }, 200);
-                                
-                                // 3. Clear suggestions
                                 document.getElementById('modal-suggestions').innerHTML = '';
                                 document.getElementById('modal-search').value = item.display_name;
                             };
@@ -698,7 +676,6 @@
 
     async function saveLocation() {
         if (!selectedLocation) return alert("Please select a location first");
-        
         try {
             const response = await fetch("/update-location", {
                 method: "POST",
@@ -715,12 +692,14 @@
             alert("Network error while saving location.");
         }
     }
+
+    // ========================================================
+    // ASYNC CHAT SUBMISSION (polling)
+    // ========================================================
     async function triggerSubmission(e) {
-        if (e) e.preventDefault(); 
-        
+        if (e) e.preventDefault();
         const text = chatTextarea.value.trim();
         const hasImage = chatImageInput && chatImageInput.files.length > 0;
-
         if (text === '' && !hasImage) return;
         if (sendBtn.disabled) return;
 
@@ -732,21 +711,8 @@
             contentText += '\n[Image Attached: ' + chatImageInput.files[0].name + ']';
         }
 
-        const userMsg = document.createElement('div');
-        userMsg.className = 'msg msg-user';
-        userMsg.innerHTML = `
-            <div class="msg-meta">
-                <span class="msg-role">You</span>
-                <span class="msg-time">Just now · chat</span>
-            </div>
-            <p class="msg-text">${escapeHTML(contentText)}</p>
-        `;
-        chatScroll.appendChild(userMsg);
-        saveChatToBrowser();
-
         const thinkingId = 'thinking-span-' + Date.now();
         const svgIcon = `<svg class="icon-sm" style="animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>`;
-        
         const thinkingMsg = document.createElement('div');
         thinkingMsg.className = 'msg msg-assistant';
         thinkingMsg.id = 'thinking-indicator';
@@ -761,7 +727,7 @@
             </p>
         `;
         chatScroll.appendChild(thinkingMsg);
-        
+
         const textSpan = document.getElementById(thinkingId);
         if (textSpan) {
             const states = ["Processing your request...", "SustainAi is thinking...", "Analyzing your request..."];
@@ -775,7 +741,7 @@
                 textSpan.textContent = states[stateIndex];
             }, 2500);
         }
-        
+
         chatScroll.scrollTop = chatScroll.scrollHeight;
         chatTextarea.readOnly = true;
         chatTextarea.style.opacity = '0.5';
@@ -783,47 +749,83 @@
         sendBtn.disabled = true;
 
         try {
-            const formData = new FormData(chatForm);
-            const response = await fetch("/chat", {
+            const formData = new FormData();
+            formData.append('query', text);
+            if (hasImage) {
+                formData.append('image', chatImageInput.files[0]);
+            }
+
+            const response = await fetch("/process-chat", {
                 method: "POST",
                 body: formData
             });
+            const data = await response.json();
 
             if (response.status === 400) {
                 const thinkingEl = document.getElementById('thinking-indicator');
                 if (thinkingEl) thinkingEl.remove();
-                
                 chatTextarea.readOnly = false;
                 chatTextarea.style.opacity = '1';
                 sendBtn.innerHTML = '<span>Send</span><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
                 sendBtn.disabled = false;
-                
                 toggleLocationModal(true);
                 return;
             }
 
-            const data = await response.json();
-
-            if (data.success) {
+            if (!data.job_id) {
+                alert("Failed to start job: " + (data.error || "Unknown error"));
                 const thinkingEl = document.getElementById('thinking-indicator');
                 if (thinkingEl) thinkingEl.remove();
+                chatTextarea.readOnly = false;
+                chatTextarea.style.opacity = '1';
+                sendBtn.innerHTML = '<span>Send</span><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+                sendBtn.disabled = false;
+                return;
+            }
 
-                const aiMsg = document.createElement('div');
-                aiMsg.className = 'msg msg-assistant';
-                aiMsg.innerHTML = `
-                    <div class="msg-meta">
-                        <span class="msg-role">${escapeHTML(systemName)}</span>
-                        <span class="msg-time">Just now · chat</span>
-                    </div>
-                    <p class="msg-text">${escapeHTML(data.response)}</p>
-                `;
-                chatScroll.appendChild(aiMsg);
-                chatScroll.scrollTop = chatScroll.scrollHeight;
-                saveChatToBrowser();
-            } else {
-                const thinkingEl = document.getElementById('thinking-indicator');
-                if (thinkingEl) thinkingEl.remove();
-                alert("Error: " + (data.error || "Unknown error"));
+            const jobId = data.job_id;
+            let done = false;
+            while (!done) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const statusRes = await fetch(`/job/${jobId}`);
+                const statusData = await statusRes.json();
+
+                if (statusData.status === 'done') {
+                    const thinkingEl = document.getElementById('thinking-indicator');
+                    if (thinkingEl) thinkingEl.remove();
+
+                    const userMsg = document.createElement('div');
+                    userMsg.className = 'msg msg-user';
+                    userMsg.innerHTML = `
+                        <div class="msg-meta">
+                            <span class="msg-role">You</span>
+                            <span class="msg-time">Just now · chat</span>
+                        </div>
+                        <p class="msg-text">${escapeHTML(contentText)}</p>
+                    `;
+                    chatScroll.appendChild(userMsg);
+
+                    const aiMsg = document.createElement('div');
+                    aiMsg.className = 'msg msg-assistant';
+                    aiMsg.innerHTML = `
+                        <div class="msg-meta">
+                            <span class="msg-role">${escapeHTML(systemName)}</span>
+                            <span class="msg-time">Just now · chat</span>
+                        </div>
+                        <p class="msg-text">${escapeHTML(statusData.response)}</p>
+                    `;
+                    chatScroll.appendChild(aiMsg);
+                    chatScroll.scrollTop = chatScroll.scrollHeight;
+                    saveChatToBrowser();
+                    done = true;
+                } else if (statusData.status === 'error') {
+                    const thinkingEl = document.getElementById('thinking-indicator');
+                    if (thinkingEl) thinkingEl.remove();
+                    alert("Error: " + (statusData.error || "Unknown error"));
+                    done = true;
+                } else {
+                    console.log("Progress:", statusData.progress);
+                }
             }
         } catch (err) {
             console.error("Chat error:", err);
@@ -834,39 +836,47 @@
             chatTextarea.value = '';
             chatTextarea.readOnly = false;
             chatTextarea.style.opacity = '1';
+            clearAttachedImage();
             sendBtn.innerHTML = '<span>Send</span><svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
             sendBtn.disabled = false;
         }
     }
 
     if (chatForm) {
-        // Handle Button Click Submission
         chatForm.addEventListener('submit', triggerSubmission);
-
-        // Handle Enter Key Submission
         chatTextarea.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); 
+                e.preventDefault();
                 triggerSubmission(e);
             }
         });
+        sendBtn.addEventListener('click', triggerSubmission);
     }
 
-    // Minor: Add spinner to Speech button as well
-    function showSpeechThinking(formElement) {
-        const btn = formElement.querySelector('#speech-start-btn');
-        if (btn) {
-            btn.innerHTML = `<svg class="icon-sm" style="animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg><span>Processing...</span>`;
-            btn.disabled = true;
-        }
-    }
-
-    // Speech image: upload via AJAX and show preview
+    // Speech image upload preview
     const speechImageInput = document.getElementById('speech-image');
     const speechImageName = document.getElementById('speech-image-name');
     const speechImagePreview = document.getElementById('speech-image-preview');
     const speechImageImg = document.getElementById('speech-image-img');
     const speechImageStatus = document.getElementById('speech-image-status');
+
+    function clearSpeechAttachedImage() {
+        if (speechImageInput) {
+            speechImageInput.value = '';
+        }
+        if (speechImageName) {
+            speechImageName.textContent = '';
+        }
+        if (speechImagePreview) {
+            speechImagePreview.style.display = 'none';
+        }
+        if (speechImageImg) {
+            speechImageImg.src = '';
+        }
+        if (speechImageStatus) {
+            speechImageStatus.textContent = '';
+        }
+    }
 
     if (speechImageInput) {
         speechImageInput.addEventListener('change', function () {
@@ -898,32 +908,43 @@
         });
     }
 
-    // --- Voice Recording Logic ---
+    // Voice recording
     let mediaRecorder;
     let audioChunks = [];
     let stream;
     let currentAudio = null;
 
+    // Helper to update audio control button state
+    function updateAudioButtonState(isPlaying) {
+        const ctrlBtn = document.getElementById('speech-audio-ctrl');
+        const ctrlText = document.getElementById('audio-ctrl-text');
+        const ctrlIcon = document.getElementById('audio-ctrl-icon');
+        if (!ctrlBtn || !ctrlText || !ctrlIcon) return;
+
+        if (isPlaying) {
+            ctrlText.innerText = 'Pause Audio';
+            ctrlIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
+        } else {
+            ctrlText.innerText = 'Play Audio';
+            ctrlIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Check if location is None (or empty string/null)
         const currentLocation = "{{ session.get('location') }}";
-        
-        // If the location is missing, trigger the popup
         if (!currentLocation || currentLocation === "None" || currentLocation === "null") {
             console.log("No location set. Opening location modal...");
             toggleLocationModal(true);
         }
-
         loadChatFromBrowser();
     });
 
     async function switchMode(mode) {
         const formData = new FormData();
         formData.append('mode', mode);
-        
         try {
             await fetch("/set-mode", { method: "POST", body: formData });
-            window.location.reload(); 
+            window.location.reload();
         } catch (err) {
             console.error("Mode switch failed", err);
         }
@@ -931,19 +952,18 @@
 
     function toggleAudioPlayback() {
         if (!currentAudio) return;
-        
         const ctrlBtn = document.getElementById('speech-audio-ctrl');
         const ctrlText = document.getElementById('audio-ctrl-text');
         const ctrlIcon = document.getElementById('audio-ctrl-icon');
 
         if (currentAudio.paused) {
             currentAudio.play();
-            ctrlText.innerText = "Pause Audio";
-            ctrlIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
+            if (ctrlText) ctrlText.innerText = 'Pause Audio';
+            if (ctrlIcon) ctrlIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`;
         } else {
             currentAudio.pause();
-            ctrlText.innerText = "Play Audio";
-            ctrlIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
+            if (ctrlText) ctrlText.innerText = 'Play Audio';
+            if (ctrlIcon) ctrlIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"></polygon>`;
         }
     }
 
@@ -952,7 +972,6 @@
         const stopBtn = document.getElementById('speech-stop-btn');
         const statusVal = document.getElementById('speech-status-val');
         const recText = document.getElementById('rec-text');
-
         if (state === 'listening') {
             if (startBtn) startBtn.style.display = 'none';
             if (stopBtn) stopBtn.style.display = 'block';
@@ -962,7 +981,7 @@
             if (startBtn) startBtn.style.display = 'none';
             if (stopBtn) stopBtn.style.display = 'none';
             if (statusVal) statusVal.innerText = "Processing...";
-        } else { // Idle
+        } else {
             if (startBtn) startBtn.style.display = 'block';
             if (stopBtn) stopBtn.style.display = 'none';
             if (statusVal) statusVal.innerText = "Idle";
@@ -975,7 +994,6 @@
         if (show) {
             const thinkingId = 'thinking-voice-span-' + Date.now();
             const svgIcon = `<svg class="icon-sm" style="animation: spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>`;
-            
             const thinkingDiv = document.createElement('div');
             thinkingDiv.id = 'thinking-indicator';
             thinkingDiv.className = 'msg msg-assistant';
@@ -991,18 +1009,12 @@
             `;
             chatScroll.appendChild(thinkingDiv);
             chatScroll.scrollTop = chatScroll.scrollHeight;
-
-            // Setup the cycling text interval
             const textSpan = document.getElementById(thinkingId);
             if (textSpan) {
-                const states = [
-                    "Processing your voice request...", 
-                    "SustainAi is Thinking...", 
-                    "Analyzing your voice input..."
-                ];
+                const states = ["Processing your voice request...", "SustainAi is Thinking...", "Analyzing your voice input..."];
                 let stateIndex = 0;
                 setInterval(() => {
-                    if (!document.getElementById(thinkingId)) return; // Stop if element removed
+                    if (!document.getElementById(thinkingId)) return;
                     stateIndex = (stateIndex + 1) % states.length;
                     textSpan.textContent = states[stateIndex];
                 }, 2500);
@@ -1018,12 +1030,10 @@
     function showDashboardToast(title = 'Dashboard ready', body = 'A new dashboard has been generated and is ready to view.') {
         const toast = document.getElementById('dashboard-toast');
         if (!toast) return;
-
         const titleEl = toast.querySelector('strong');
         const bodyEl = toast.querySelector('div > div');
         if (titleEl) titleEl.textContent = title;
         if (bodyEl) bodyEl.textContent = body;
-
         toast.style.display = 'flex';
         clearTimeout(window.dashboardToastTimer);
         window.dashboardToastTimer = setTimeout(() => {
@@ -1033,8 +1043,7 @@
 
     function ensureDashboardButton(url) {
         const container = document.getElementById('dashboard-action-container');
-        if (!container || container.querySelector('a')) return; 
-
+        if (!container || container.querySelector('a')) return;
         const link = document.createElement('a');
         link.href = url;
         link.target = '_blank';
@@ -1051,12 +1060,10 @@
         try {
             const response = await fetch("/check-dashboard");
             const data = await response.json();
-
             if (data.ready) {
                 if (!document.querySelector('.btn-dashboard')) {
                     ensureDashboardButton("/dashboard");
                 }
-
                 const currentTimestamp = data.last_modified || 0;
                 if (lastKnownDashboardTimestamp === null) {
                     lastKnownDashboardTimestamp = currentTimestamp;
@@ -1071,14 +1078,19 @@
         }
     }, 3000);
 
-
     async function startRecording() {
         try {
-            const startTime = Date.now(); // Track when recording started
-            const MIN_DURATION = 5000; // 5 seconds minimum
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            // --- VAD Setup ---
+            const startTime = Date.now();
+            const MIN_DURATION = 5000;
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 16000,
+                    channelCount: 1
+                }
+            });
             const audioContext = new AudioContext();
             const source = audioContext.createMediaStreamSource(stream);
             const analyser = audioContext.createAnalyser();
@@ -1087,13 +1099,18 @@
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
             let silenceStart = null;
-            const SILENCE_THRESHOLD = 30; 
+            const SILENCE_THRESHOLD = 30;
             const SILENCE_DELAY = 1500;
 
-            const mimeType = MediaRecorder.isTypeSupported('audio/webm') 
-                             ? 'audio/webm' 
-                             : 'audio/ogg';
-            
+            let mimeType = 'audio/webm';
+            if (MediaRecorder.isTypeSupported('audio/wav')) {
+                mimeType = 'audio/wav';
+            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                mimeType = 'audio/webm';
+            } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+                mimeType = 'audio/ogg';
+            }
+
             mediaRecorder = new MediaRecorder(stream, { mimeType });
             audioChunks = [];
 
@@ -1110,18 +1127,13 @@
             mediaRecorder.start();
             setUIState('listening');
 
-            // --- VAD Loop ---
             function checkVolume() {
                 if (!mediaRecorder || mediaRecorder.state === "inactive") return;
-                
                 analyser.getByteFrequencyData(dataArray);
                 let volume = 0;
                 for (let i = 0; i < dataArray.length; i++) volume += dataArray[i];
                 volume /= dataArray.length;
-
                 const timePassed = Date.now() - startTime;
-
-                // Only check for silence if we have passed the minimum duration
                 if (timePassed > MIN_DURATION) {
                     if (volume < SILENCE_THRESHOLD) {
                         if (!silenceStart) silenceStart = Date.now();
@@ -1136,7 +1148,6 @@
                 requestAnimationFrame(checkVolume);
             }
             checkVolume();
-
         } catch (err) {
             console.error("Mic access error:", err);
             alert("Could not access microphone. Please check permissions.");
@@ -1161,41 +1172,18 @@
         }
     });
 
-    function ensureDashboardButton(url) {
-        const container = document.getElementById('dashboard-action-container');
-        if (!container) return;
-        if (container.querySelector('a[href="/dashboard"]')) return;
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.className = 'btn-primary btn-dashboard';
-        link.style.cssText = 'padding: 6px 14px; width: auto; font-size: 12px; margin: 0; text-decoration: none; display: inline-flex;';
-        link.innerHTML = `
-            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-            View Dashboard
-        `;
-        container.appendChild(link);
-    }
-
-    function showDashboardToast() {
-        const toast = document.getElementById('dashboard-toast');
-        if (!toast) return;
-        toast.style.display = 'flex';
-        clearTimeout(window.dashboardToastTimer);
-        window.dashboardToastTimer = setTimeout(() => {
-            toast.style.display = 'none';
-        }, 4000);
-    }
-
+    // ========================================================
+    // ASYNC VOICE UPLOAD (polling) with button state fix
+    // ========================================================
     async function uploadAudio() {
-        // 1. Update UI immediately
         setUIState('processing');
         setThinkingState(true);
 
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const mimeType = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunks, { type: mimeType });
         const formData = new FormData();
         formData.append("audio", audioBlob);
+        formData.append("mime_type", mimeType);
 
         try {
             const response = await fetch("/process-voice-input", {
@@ -1204,42 +1192,66 @@
             });
             const data = await response.json();
 
-            // 2. Remove the "Thinking..." state
-            setThinkingState(false);
+            if (!data.job_id) {
+                alert("Failed to start job: " + (data.error || "Unknown error"));
+                setThinkingState(false);
+                setUIState('idle');
+                return;
+            }
 
-            if (data.success) {
-                // 3. Append User Transcript to Chat
-                const userMsg = document.createElement('div');
-                userMsg.className = 'msg msg-user';
-                userMsg.innerHTML = `<div class="msg-meta"><span class="msg-role">You</span><span class="msg-time">Just now · speech</span></div><p class="msg-text">🎤 ${escapeHTML(data.transcript)}</p>`;
-                chatScroll.appendChild(userMsg);
+            const jobId = data.job_id;
+            let done = false;
+            while (!done) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const statusRes = await fetch(`/job/${jobId}`);
+                const statusData = await statusRes.json();
 
-                // 4. Append AI Response to Chat
-                const aiMsg = document.createElement('div');
-                aiMsg.className = 'msg msg-assistant';
-                aiMsg.innerHTML = `<div class="msg-meta"><span class="msg-role">${systemName}</span><span class="msg-time">Just now · speech</span></div><p class="msg-text">${escapeHTML(data.response_text)}</p>`;
-                chatScroll.appendChild(aiMsg);
-                
-                chatScroll.scrollTop = chatScroll.scrollHeight;
+                if (statusData.status === 'done') {
+                    setThinkingState(false);
 
-                // 5. Play the generated TTS audio
-                currentAudio = new Audio(data.audio_url);
-                
-                const audioCtrl = document.getElementById('speech-audio-ctrl');
-                if (audioCtrl) audioCtrl.style.display = 'block';
+                    const userMsg = document.createElement('div');
+                    userMsg.className = 'msg msg-user';
+                    userMsg.innerHTML = `<div class="msg-meta"><span class="msg-role">You</span><span class="msg-time">Just now · speech</span></div><p class="msg-text">🎤 ${escapeHTML(statusData.transcript)}</p>`;
+                    chatScroll.appendChild(userMsg);
 
-                currentAudio.play();
+                    const aiMsg = document.createElement('div');
+                    aiMsg.className = 'msg msg-assistant';
+                    aiMsg.innerHTML = `<div class="msg-meta"><span class="msg-role">${systemName}</span><span class="msg-time">Just now · speech</span></div><p class="msg-text">${escapeHTML(statusData.response_text)}</p>`;
+                    chatScroll.appendChild(aiMsg);
+                    chatScroll.scrollTop = chatScroll.scrollHeight;
 
-                currentAudio.onended = () => {
-                    if (audioCtrl) audioCtrl.style.display = 'none';
-                };
-            } else {
-                alert("Error: la" + data.error);
+                    if (statusData.audio_url) {
+                        // Create new audio and update button state
+                        currentAudio = new Audio(statusData.audio_url);
+                        const audioCtrl = document.getElementById('speech-audio-ctrl');
+                        if (audioCtrl) {
+                            audioCtrl.style.display = 'block';
+                            // Reset button to "Pause Audio" since we auto-play
+                            updateAudioButtonState(true);
+                        }
+                        currentAudio.play();
+                        currentAudio.onended = () => {
+                            if (audioCtrl) audioCtrl.style.display = 'none';
+                        };
+                    }
+                    clearSpeechAttachedImage();
+                    done = true;
+                    setUIState('idle');
+                } else if (statusData.status === 'error') {
+                    alert("Error processing audio: " + (statusData.error || "Unknown error"));
+                    clearSpeechAttachedImage();
+                    setThinkingState(false);
+                    setUIState('idle');
+                    done = true;
+                } else {
+                    console.log("Progress:", statusData.progress);
+                }
             }
         } catch (err) {
             console.error("Upload error:", err);
+            clearSpeechAttachedImage();
             setThinkingState(false);
-        } finally {
+            alert("Network error. Please try again.");
             setUIState('idle');
         }
     }
@@ -1248,14 +1260,11 @@
 <div id="location-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
         <h3 style="margin-bottom: 15px; color: white;">Select Location</h3>
-        
         <div style="position: relative; margin-bottom: 15px;">
             <input type="text" id="modal-search" placeholder="Type to search (e.g. Kannur)..." class="textarea-input" style="width: 100%;">
             <ul id="modal-suggestions" class="suggestions-list"></ul>
         </div>
-
         <div id="modal-map" style="height: 300px; width: 100%; border-radius: 8px; margin-bottom: 15px; background: #1e293b;"></div>
-        
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button onclick="toggleLocationModal(false)" class="btn-secondary">Cancel</button>
             <button onclick="saveLocation()" class="btn-primary">Save Location</button>

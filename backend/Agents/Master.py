@@ -173,6 +173,7 @@ class ChatMemoryStore:
             except Exception:
                 pass
 
+
 class WasteDispoMaster:
     ENV_CACHE_TTL_SECONDS = 60 * 60  # 1 hour
 
@@ -222,7 +223,8 @@ class WasteDispoMaster:
             f"Never ask for permission or say 'Would you like me to...?' or 'Shall I...?'. Execute and report results.\n"
             f"When the user asks for full information, reports, or analysis, run all core agents in one pass.\n"
             f"When the user refers to earlier images, data, or location context, use stored session memory and answer from it instead of asking for the upload again.\n"
-            f"IMPORTANT: Reuse cached environmental data for 1 hour when available; do not re-fetch unnecessarily.\n\n"
+            f"IMPORTANT: Reuse cached environmental data for 1 hour when available; do not re-fetch unnecessarily.\n"
+            f"IMPORTANT: Never mention file names, image paths, or internal filenames in your responses. If the user refers to an image, describe its content without revealing the file name.\n\n"
             f"--- CONTEXT ---\n"
             f"Current User Location: {self.context['location']}\n\n"
             f"AVAILABLE TOOLS:\n{agent_desc}\n\n"
@@ -296,8 +298,45 @@ class WasteDispoMaster:
         except Exception:
             return str(response)
 
+    def _remove_file_paths(self, text: str) -> str:
+        """Remove any file paths (e.g., ./backend/display/speech_xxx.jpg) from the text."""
+        if not text:
+            return text
+        # Remove any string that looks like a path ending with an image extension
+        pattern = r'[^\s]*\.(?:png|jpg|jpeg|webp)[^\s]*'
+        cleaned = re.sub(pattern, '', text, flags=re.IGNORECASE)
+        # Also remove any leftover slashes or path-like segments
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+        return cleaned
+
+    def _extract_image_path(self, text: str) -> Optional[str]:
+        """Extract an image file path from the text. More robust than before."""
+        if not text:
+            return None
+        # Look for any non‑space sequence ending with an image extension
+        m = re.search(r"([^\s]+\.(?:png|jpg|jpeg|webp))", text, flags=re.IGNORECASE)
+        if not m:
+            return None
+        candidate = m.group(1).strip().strip('"').strip("'")
+        # If it's an absolute path or relative that exists, return it
+        if os.path.exists(candidate):
+            return candidate
+        # Otherwise, check if it's a filename that exists in the display folder
+        filename = os.path.basename(candidate)
+        display_path = os.path.join("./backend/display", filename)
+        if os.path.exists(display_path):
+            return display_path
+        # Also check the root or image folder for demo images
+        demo_paths = [filename, os.path.join("image", filename)]
+        for p in demo_paths:
+            if os.path.exists(p):
+                return p
+        return None
+
     def _remember_turn(self, user_text: str, assistant_response) -> str:
         response_text = self._stringify_response(assistant_response)
+        # Remove any file paths from the response before storing
+        response_text = self._remove_file_paths(response_text)
         self.chat_memory.append_turn(user_text, response_text)
         return response_text
 
@@ -458,17 +497,6 @@ class WasteDispoMaster:
             if any(k in t for k in ["environment", "pollution", "waste", "soil", "air quality", "sustainability", "dashboard", "report"]):
                 return self._build_full_bundle(ai_text)
         return []
-
-    def _extract_image_path(self, text: str) -> Optional[str]:
-        if not text:
-            return None
-        m = re.search(r"([\w\-./\\ ]+\.(?:png|jpg|jpeg|webp))", text, flags=re.IGNORECASE)
-        if not m:
-            return None
-        candidate = m.group(1).strip().strip('"').strip("'")
-        if os.path.exists(candidate):
-            return candidate
-        return None
 
     def _wants_image_analysis(self, text: str) -> bool:
         if not text:
@@ -1042,7 +1070,7 @@ class WasteDispoMaster:
         if self._is_full_report_request(user_text) or any(a.get("intent") == "dashboard_agent" for a in (actions or [])):
             self._cleanup_previous_outputs()
 
-        # --- NEW: Hard Guardrail to intercept over-eager LLM routing ---
+        # --- Hard Guardrail to intercept over-eager LLM routing ---
         valid_actions = []
         for a in (actions or []):
             intent = a.get("intent")
@@ -1103,6 +1131,9 @@ class WasteDispoMaster:
             self.context["knowledge_base"]["search_agent"] = search_res
             self.context["location"] = place
 
+        # Store extracted image path for potential use by classifier and vision
+        extracted_image = self._extract_image_path(user_text)
+
         for action in actions:
             intent = action.get("intent")
             params = action.get("parameters", {})
@@ -1112,10 +1143,14 @@ class WasteDispoMaster:
                 if intent == "env_agent":
                     place = params.get("place") or self.context.get("location") or "Unknown"
                     res = self._run_env_cached(place)
-
                     execution_log.append({"agent": intent, "result": res})
 
                 else:
+                    # If it's a classifier agent, we also need to trigger vision agent on the same image.
+                    # We'll capture the image path from the action parameters or from extracted_image.
+                    image_path = params.get("image_path") or extracted_image
+                    is_classifier = (intent == "classifier_agent")
+
                     if intent == "plotter_agent" and (not force_full_actions) and not self._should_run_plotter(params, user_text):
                         res = {
                             "success": False,
@@ -1177,7 +1212,37 @@ class WasteDispoMaster:
                             else:
                                 params = {**params, "query": user_text}
                         res = self.agents[intent]["module"].run(params)
+
                     execution_log.append({"agent": intent, "result": res})
+
+                    # --- If this is a classifier, also run the vision agent on the same image ---
+                    if is_classifier and image_path and os.path.exists(image_path):
+                        # Check if we already have an analysis for this image to avoid duplicates
+                        existing = self.context.get("knowledge_base", {}).get("image_analyses", [])
+                        existing_paths = {item.get("file_path") for item in existing if item.get("file_path")}
+                        if image_path not in existing_paths:
+                            # Run vision agent
+                            vision_res = self.agents["vision_agent"]["module"].run({
+                                "image_path": image_path,
+                                "prompt": "Explain this image in detail and relate it to waste, pollution, and sustainability where relevant."
+                            })
+                            # Store the analysis
+                            try:
+                                rel = os.path.relpath(image_path, start=os.getcwd()).replace("\\", "/")
+                            except Exception:
+                                rel = str(image_path).replace("\\", "/")
+                            dash_src = rel if rel.startswith("../") else f"../{rel}"
+                            self.context.setdefault("knowledge_base", {}).setdefault("image_analyses", []).append({
+                                "title": f"Image Analysis: {os.path.basename(image_path)}",
+                                "file_path": image_path,
+                                "image": dash_src,
+                                "explanation": vision_res,
+                            })
+                            execution_log.append({
+                                "agent": "vision_agent",
+                                "result": {"success": True, "file_path": image_path, "explanation": vision_res}
+                            })
+                            print(f"📸 Auto-triggered vision analysis for classified image: {image_path}")
 
                 # Track created files
                 if isinstance(res, dict):
@@ -1262,19 +1327,33 @@ class WasteDispoMaster:
             else:
                 return f"📍 Location is already set to '{old_location}'."
 
-        # Direct object classification path for user-uploaded/demo images.
+        # Direct object classification path (uses summarizer but strips tables)
         if self._wants_classification(user_text):
             image_path = self._extract_image_path(user_text)
             if not image_path:
+                # Try to find a demo image if the user didn't upload one
                 for demo in ["3480.webp", os.path.join("image", "3480.webp")]:
                     if os.path.exists(demo):
                         image_path = demo
                         break
 
             if not image_path:
-                return "No image found to classify. Provide a file path ending in .png/.jpg/.jpeg/.webp, or keep 3480.webp in the project root for the demo."
+                return "We could not find the image you uploaded. Please confirm whether this is the image you intended to use."
 
+            # Run classifier
             classification = self._classify_image(image_path)
+
+            # Also run vision agent on the same image (if not already analysed)
+            existing = self.context.get("knowledge_base", {}).get("image_analyses", [])
+            existing_paths = {item.get("file_path") for item in existing if item.get("file_path")}
+            vision_explanation = None
+            if image_path not in existing_paths:
+                vision_explanation = self.agents["vision_agent"]["module"].run({
+                    "image_path": image_path,
+                    "prompt": "Explain this image in detail and relate it to waste, pollution, and sustainability where relevant."
+                })
+                # Remove any file paths from the vision explanation
+                vision_explanation = self._remove_file_paths(vision_explanation)
 
             if isinstance(classification, dict) and classification.get("success"):
                 detections = classification.get("detections") or []
@@ -1290,24 +1369,49 @@ class WasteDispoMaster:
                     "image": dash_src,
                     "result": classification,
                 })
+
+                # Store vision analysis if we have one
+                if vision_explanation:
+                    self.context.setdefault("knowledge_base", {}).setdefault("image_analyses", []).append({
+                        "title": f"Image Analysis: {os.path.basename(image_path)}",
+                        "file_path": image_path,
+                        "image": dash_src,
+                        "explanation": vision_explanation,
+                    })
+
+                # Update master insights and dashboard
                 self.context["knowledge_base"]["master_insights"] = self._build_master_insights(self.context["knowledge_base"])
                 dash_res = self.agents["dashboard_agent"]["module"].run({"knowledge_base": self.context["knowledge_base"]})
                 if isinstance(dash_res, dict):
                     self.context["knowledge_base"]["dashboard_agent"] = dash_res
                 self.session.save(self.context)
 
+                # Build a combined description for the summarizer
                 if detections:
-                    lines = [f"Classification complete for {os.path.basename(image_path)}:"]
+                    detected_items = []
                     for item in detections[:8]:
                         label = item.get("label") or "unknown"
                         confidence = item.get("confidence")
-                        lines.append(f"- {label} ({confidence:.2f})" if isinstance(confidence, (int, float)) else f"- {label}")
-                    raw = "\n".join(lines)
-                    # Let the summarizer produce a user-friendly message
-                    return self._remember_turn(user_text, self._summarize_for_user(raw, context="classification"))
+                        if confidence is not None:
+                            detected_items.append(f"{label} ({confidence*100:.0f}% confidence)")
+                        else:
+                            detected_items.append(label)
+                    classification_text = "I detected: " + ", ".join(detected_items) + "."
+                else:
+                    classification_text = "I classified the image, but no objects were detected."
 
-                raw = f"Classification complete for {os.path.basename(image_path)}, but no detections were returned."
-                return self._remember_turn(user_text, self._summarize_for_user(raw, context="classification"))
+                if vision_explanation:
+                    combined_text = f"{classification_text} Here's what I see: {vision_explanation}"
+                else:
+                    combined_text = classification_text
+
+                # Use the summarizer to produce a friendly, conversational answer (with tables stripped)
+                raw_summary = self._summarize_for_user(combined_text, context="classification_and_analysis")
+                # Also strip any markdown tables that might have slipped through
+                cleaned, _ = self._parse_summary_output(raw_summary)
+                # Remove any remaining file paths just in case
+                cleaned = self._remove_file_paths(cleaned)
+                return self._remember_turn(user_text, cleaned)
 
             return self._remember_turn(user_text, classification.get("error") if isinstance(classification, dict) and classification.get("error") else "Classification failed.")
 
@@ -1321,12 +1425,13 @@ class WasteDispoMaster:
                         break
 
             if not image_path:
-                return "No image found. Provide a file path ending in .png/.jpg/.jpeg/.webp, or keep 3480.webp in the project root for the demo."
+                return "We could not find the image you uploaded. Please confirm whether this is the image you intended to use."
 
             explanation = self.agents["vision_agent"]["module"].run({
                 "image_path": image_path,
                 "prompt": "Explain this image in detail and relate it to waste, pollution, and sustainability where relevant."
             })
+            explanation = self._remove_file_paths(explanation)
 
             # Dashboard is generated under interface/, so use ../ relative src.
             try:
@@ -1349,9 +1454,12 @@ class WasteDispoMaster:
                 self.context["knowledge_base"]["dashboard_agent"] = dash_res
             self.session.save(self.context)
 
-            # Summarize the image explanation for user-friendly chat output
+            # Summarize the image explanation for user-friendly chat output (strip tables)
             raw = f"Image analysis for {os.path.basename(image_path)}: {explanation}"
-            return self._remember_turn(user_text, self._summarize_for_user(raw, context="image_analysis"))
+            summary = self._summarize_for_user(raw, context="image_analysis")
+            cleaned, _ = self._parse_summary_output(summary)
+            cleaned = self._remove_file_paths(cleaned)
+            return self._remember_turn(user_text, cleaned)
 
         # Implicit consent: user confirms a previously suggested action.
         if self._is_affirmative_text(user_text) and self.context.get("last_suggested_actions"):
@@ -1494,6 +1602,8 @@ class WasteDispoMaster:
 
         # Keep the chat answer compact
         response_text = self._limit_chat_paragraphs(response_text, max_paragraphs=3)
+        # Remove any file paths that may have crept in
+        response_text = self._remove_file_paths(response_text)
         
         # Optional: You may want to comment out this grading append for production 
         # so it doesn't ruin the "human" vibe with a sudden "[Data: 80% | Grade: C]" tag.
@@ -1505,22 +1615,39 @@ class WasteDispoMaster:
 
     def _summarize_for_user(self, raw_text: str, context: Optional[str] = None) -> str:
         """Use the summarizer agent to make raw agent outputs user-friendly.
-
         Falls back to returning the original text on error.
         """
         if not raw_text:
             return ""
+        # Remove any file paths before summarization
+        raw_text = self._remove_file_paths(raw_text)
         try:
             summarizer = self.agents.get("summarizer_agent", {}).get("module")
             if summarizer:
                 payload = {"text": raw_text}
                 if context:
-                    payload["context"] = context
+                    # For classification, provide a custom prompt to get a friendly, conversational response
+                    if context in ["classification", "classification_and_analysis"]:
+                        payload["context"] = (
+                            "You are a friendly environmental assistant. "
+                            "Summarize the following classification and analysis results in a natural, human-like way. "
+                            "Explain what the image shows, what objects were detected, and what environmental implications arise. "
+                            "Keep it concise, warm, and easy to understand. Do not use bullet points or tables; just a short paragraph."
+                        )
+                    else:
+                        payload["context"] = context
                 res = summarizer.run(payload)
                 if isinstance(res, dict):
-                    return res.get("summary") or res.get("text") or res.get("output") or raw_text
-                if isinstance(res, str):
-                    return res
+                    summary = res.get("summary") or res.get("text") or res.get("output") or raw_text
+                elif isinstance(res, str):
+                    summary = res
+                else:
+                    summary = raw_text
+                # Strip any markdown tables from the summary
+                cleaned, _ = self._parse_summary_output(summary)
+                # Remove any remaining file paths
+                cleaned = self._remove_file_paths(cleaned)
+                return cleaned
         except Exception:
             pass
         return raw_text
