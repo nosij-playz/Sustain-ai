@@ -9,6 +9,15 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 from werkzeug.utils import secure_filename
 from pydub import AudioSegment
 
+# ============================================================
+# FIX: Tell pydub where to find ffmpeg/ffprobe
+# ============================================================
+AudioSegment.converter = "/usr/bin/ffmpeg"
+AudioSegment.ffmpeg = "/usr/bin/ffmpeg"
+AudioSegment.ffprobe = "/usr/bin/ffprobe"
+os.environ["PATH"] = os.environ.get("PATH", "") + ":/usr/bin"
+# ============================================================
+
 from backend.Agents.Master import WasteDispoMaster
 
 app = Flask(__name__)
@@ -54,20 +63,20 @@ def run_chat_pipeline(job_id, query, image_path, location):
             jobs[job_id] = {"status": "error", "error": "Agent initialization failed.", "created_at": time.time()}
             return
 
+        # Build master query with image path if present
+        master_query = query
         if image_path:
-            query = f"{query} {image_path}"
+            master_query = f"{query} {image_path}"
 
         jobs[job_id] = {"status": "processing", "progress": "Processing your request...", "created_at": time.time()}
 
-        ai_response = master.process_input(query)
+        ai_response = master.process_input(master_query)
 
         timestamp = datetime.now().strftime("%I:%M %p")
-        ui_state["chat_history"].append({
-            "role": "user",
-            "timestamp": timestamp,
-            "mode": "chat",
-            "content": query  # Chat mode can show the full query (including image path) – that's fine
-        })
+        # ------------------------------------------------------------
+        # FIX: Only append the assistant message here.
+        # The user message was already added in the /process-chat route.
+        # ------------------------------------------------------------
         ui_state["chat_history"].append({
             "role": "assistant",
             "timestamp": timestamp,
@@ -115,12 +124,22 @@ def run_voice_pipeline(job_id, audio_path, mime_type, location, image_path):
             jobs[job_id] = {"status": "error", "error": "Could not transcribe audio. Please speak clearly.", "created_at": time.time()}
             return
 
-        # Keep the clean transcript for the user
-        clean_transcript = user_text
+        # ------------------------------------------------------------
+        # FIX: Add the user message (transcript) immediately after transcription.
+        # This ensures that if the page reloads, the user's query is already in history.
+        # ------------------------------------------------------------
+        timestamp = datetime.now().strftime("%I:%M %p")
+        ui_state["chat_history"].append({
+            "role": "user",
+            "timestamp": timestamp,
+            "mode": "speech",
+            "content": f"🎤 {user_text}"   # clean transcript, no image path
+        })
 
         # Append image path only for the master agent
+        master_query = user_text
         if image_path:
-            user_text = f"{user_text} {image_path}"
+            master_query = f"{user_text} {image_path}"
 
         jobs[job_id] = {"status": "processing", "progress": "Contacting AI models...", "created_at": time.time()}
 
@@ -129,7 +148,7 @@ def run_voice_pipeline(job_id, audio_path, mime_type, location, image_path):
             jobs[job_id] = {"status": "error", "error": "Agent initialization failed.", "created_at": time.time()}
             return
 
-        ai_response = master.process_input(user_text)
+        ai_response = master.process_input(master_query)
 
         jobs[job_id] = {"status": "processing", "progress": "Generating speech...", "created_at": time.time()}
 
@@ -138,14 +157,9 @@ def run_voice_pipeline(job_id, audio_path, mime_type, location, image_path):
         import asyncio
         tts_result = asyncio.run(generate_tts_file(ai_response, tts_path))
 
-        timestamp = datetime.now().strftime("%I:%M %p")
-        # Store the clean transcript (without image path) in chat history
-        ui_state["chat_history"].append({
-            "role": "user",
-            "timestamp": timestamp,
-            "mode": "speech",
-            "content": f"🎤 {clean_transcript}"
-        })
+        # ------------------------------------------------------------
+        # Append the assistant message now.
+        # ------------------------------------------------------------
         ui_state["chat_history"].append({
             "role": "assistant",
             "timestamp": timestamp,
@@ -158,7 +172,7 @@ def run_voice_pipeline(job_id, audio_path, mime_type, location, image_path):
 
         jobs[job_id] = {
             "status": "done",
-            "transcript": clean_transcript,  # Send clean transcript to frontend
+            "transcript": user_text,
             "response_text": ai_response,
             "audio_url": f"/display/{tts_filename}" if tts_result else None,
             "created_at": time.time()
@@ -214,7 +228,7 @@ def clear_master_cache(location: str):
         print(f"🗑️ Cache cleared for location: {location}")
 
 # ============================
-# ROUTES (existing unchanged except additions)
+# ROUTES
 # ============================
 @app.route("/update-location", methods=["POST"])
 def update_location():
@@ -333,11 +347,12 @@ def chat():
     else:
         ai_response = master.process_input(full_query)
     timestamp = datetime.now().strftime("%I:%M %p")
+    # Store only the clean query (without image path) in chat history
     ui_state["chat_history"].append({
         "role": "user",
         "timestamp": timestamp,
         "mode": "chat",
-        "content": full_query
+        "content": query
     })
     ui_state["chat_history"].append({
         "role": "assistant",
@@ -415,6 +430,18 @@ def process_chat():
         filename = secure_filename(f"upload_{uuid.uuid4().hex}_{image_file.filename}")
         image_path = os.path.join(UPLOAD_DIR, filename)
         image_file.save(image_path)
+
+    # ------------------------------------------------------------
+    # FIX: Add the user message immediately to chat history.
+    # This ensures the user query is visible even if the page reloads.
+    # ------------------------------------------------------------
+    timestamp = datetime.now().strftime("%I:%M %p")
+    ui_state["chat_history"].append({
+        "role": "user",
+        "timestamp": timestamp,
+        "mode": "chat",
+        "content": query   # clean query without image path
+    })
 
     job_id = str(uuid.uuid4())
     jobs[job_id] = {"status": "queued", "progress": "Queued...", "created_at": time.time()}
